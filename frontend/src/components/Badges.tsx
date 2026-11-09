@@ -1,0 +1,1 @@
+export function Severity({value}:{value:string}){return <span className={'badge sev-'+value.toLowerCase()}>{value}</span>} export function Status({value}:{value:string}){return <span className={'badge status-'+value.toLowerCase().replace(' ','-')}>{value}</span>}
