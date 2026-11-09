@@ -22,14 +22,28 @@ To demonstrate import, open **Report imports**, select `sample-data/nmap-sample.
 
 ## Local development
 
-Run PostgreSQL separately, set `DATABASE_URL='postgres://vanta:password@localhost:5432/vanta?sslmode=disable'`, then:
+For the supported local setup, copy `.env.example` to the ignored `.env` file and start the stack with Docker Compose. Compose starts its own PostgreSQL container and supplies the API with a Docker-network `DATABASE_URL`; it does not use a production database URL.
 
 ```sh
-cd backend && go run ./cmd/api
-cd frontend && npm install && npm run dev
+cp .env.example .env
+docker compose up --build
 ```
 
-The API expects `FRONTEND_ORIGIN` (defaults to `http://localhost:5173`). The frontend supports `VITE_API_URL` (defaults to `http://localhost:8080/api`).
+For a non-Compose local backend, set `DATABASE_URL` to a local PostgreSQL connection URL, then run `go run ./cmd/api` from `backend`. The API expects `FRONTEND_ORIGIN` (defaults to `http://localhost:5173`). The frontend supports `VITE_API_URL` (defaults to `http://localhost:8080/api`).
+
+## Render PostgreSQL production
+
+Deploy the backend image from `backend/Dockerfile` to the application host. The image includes `/app/migrations`, and the API applies the ordered SQL migrations before it accepts HTTP requests.
+
+Set these backend environment variables in the deployment dashboard, never in source control:
+
+- `DATABASE_URL`: the Render PostgreSQL connection URL supplied by Render.
+- `FRONTEND_ORIGIN`: the exact public origin of the deployed frontend.
+- `PORT`: the port supplied by the application host. The API listens on all interfaces at that port.
+
+`DATABASE_URL` is required. There is no local connection-string fallback in the Go application. On startup, the API opens and pings the PostgreSQL pool, runs the idempotent migrations in `backend/migrations`, then begins serving requests. A failed connection or migration prevents startup. The API closes the HTTP server and pool on `SIGTERM`/`SIGINT`.
+
+The migration currently creates schema and deterministic development seed findings. Review whether those seed records are appropriate before using a new production database.
 
 ## Architecture and API
 
