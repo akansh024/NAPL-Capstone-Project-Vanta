@@ -1,62 +1,213 @@
 # VANTA
-# Name: Akansh Pandey B.Sc(Hons)CyberSecurity
-#       Aditya Chouhan B.Sc(Hons)CyberSecurity
- #      Kartikey drall B.Sc(Hons)ComputerScience
-VANTA (Vulnerability Analysis, Normalization, Tracking and Assessment) is an early academic vulnerability-management platform. It imports authorized Nmap XML reports as scanner observations and provides a persisted workflow for reviewing tracked findings. It does **not** scan targets, fabricate CVEs, exploit systems, or automatically remediate issues.
+### Vulnerability Analysis, Normalization, Tracking and Assessment
 
-## Working capabilities
+**An Academic Vulnerability Management Platform**
 
-- React dashboard backed by Go and PostgreSQL.
-- Search/filter finding records; open detail; update `Open`, `In Progress`, or `Resolved` status.
-- Nmap XML upload with safe size/format checks, host/service/script observation persistence, and import history.
-- Clearly labelled deterministic development seed findings for a presentation.
+**Project Team**
 
-## Quick start
+- **Akansh Pandey** | B.Sc. (Hons.) Cybersecurity
+- **Aditya Chouhan** | B.Sc. (Hons.) Cybersecurity
+- **Kartikey Drall** | B.Sc. (Hons.) Computer Science
 
-```sh
+---
+
+## Overview
+
+VANTA (Vulnerability Analysis, Normalization, Tracking and Assessment) is an academic vulnerability management platform designed to centralize, organize, and track security findings.
+
+The platform imports authorized Nmap XML reports as scanner observations and provides a persistent workflow for reviewing and managing tracked findings.
+
+VANTA does not directly scan targets, fabricate CVEs, exploit systems, or automatically remediate vulnerabilities.
+
+## Working Capabilities
+
+- **Dashboard:** React-based dashboard powered by a Go backend and PostgreSQL database.
+- **Finding Management:** Search, filter, view, and update vulnerability finding records.
+- **Status Tracking:** Manage findings through three workflow states: `Open`, `In Progress`, and `Resolved`.
+- **Nmap XML Import:** Upload authorized Nmap XML reports with file-size and format validation.
+- **Observation Persistence:** Store imported host, service, and script observations.
+- **Import History:** Review previous report imports and their associated statistics.
+- **Development Seed Data:** Clearly labelled, deterministic sample findings for demonstrations and presentations.
+
+## Technology Stack
+
+| Component | Technology |
+|---|---|
+| Frontend | React, TypeScript, Vite |
+| Backend | Go |
+| Database | PostgreSQL |
+| Containerization | Docker, Docker Compose |
+
+## Quick Start
+
+### Prerequisites
+
+- Docker
+- Docker Compose
+
+### Run the Application
+
+Clone the repository and navigate to the project directory.
+
+```bash
 cp .env.example .env
 docker compose up --build
 ```
 
-Open http://localhost:5173. The API is at http://localhost:8080/api/health. Docker creates the schema and seeds development records on API startup; PostgreSQL persists in `postgres_data`.
+Once the containers are running, access the application:
 
-To demonstrate import, open **Report imports**, select `sample-data/nmap-sample.xml`, and click **Import Nmap XML**. The history should show 2 assets and 3 observations. They are deliberately not converted into findings.
+| Service | URL |
+|---|---|
+| Frontend Dashboard | http://localhost:5173 |
+| Backend Health API | http://localhost:8080/api/health |
 
-## Local development
+Docker Compose starts the frontend, backend, and PostgreSQL services.
 
-For the supported local setup, copy `.env.example` to the ignored `.env` file and start the stack with Docker Compose. Compose starts its own PostgreSQL container and supplies the API with a Docker-network `DATABASE_URL`; it does not use a production database URL.
+The API automatically applies the database schema and initializes development seed records on startup. PostgreSQL data is persisted using the `postgres_data` volume.
 
-```sh
+### Demonstrating Nmap XML Import
+
+To demonstrate the report-import functionality:
+
+1. Open the VANTA dashboard.
+2. Navigate to **Report Imports**.
+3. Select `sample-data/nmap-sample.xml`.
+4. Click **Import Nmap XML**.
+5. Review the generated import history.
+
+The sample report should produce:
+
+- **2 assets**
+- **3 observations**
+
+These observations are intentionally stored separately and are not automatically converted into vulnerability findings.
+
+## Local Development
+
+The recommended local development environment uses Docker Compose.
+
+Copy the example environment file:
+
+```bash
 cp .env.example .env
+```
+
+Start the application:
+
+```bash
 docker compose up --build
 ```
 
-For a non-Compose local backend, set `DATABASE_URL` to a local PostgreSQL connection URL, then run `go run ./cmd/api` from `backend`. The API expects `FRONTEND_ORIGIN` (defaults to `http://localhost:5173`). The frontend supports `VITE_API_URL` (defaults to `http://localhost:8080/api`).
+### Running the Backend Without Docker Compose
 
-## Render PostgreSQL production
+For standalone backend development, configure `DATABASE_URL` with a valid local PostgreSQL connection string.
 
-Deploy the backend image from `backend/Dockerfile` to the application host. The image includes `/app/migrations`, and the API applies the ordered SQL migrations before it accepts HTTP requests.
+Run the following command from the `backend` directory:
 
-Set these backend environment variables in the deployment dashboard, never in source control:
+```bash
+go run ./cmd/api
+```
 
-- `DATABASE_URL`: the Render PostgreSQL connection URL supplied by Render.
-- `FRONTEND_ORIGIN`: the exact public origin of the deployed frontend.
-- `PORT`: the port supplied by the application host. The API listens on all interfaces at that port.
+The backend expects the following environment variables:
 
-`DATABASE_URL` is required. There is no local connection-string fallback in the Go application. On startup, the API opens and pings the PostgreSQL pool, runs the idempotent migrations in `backend/migrations`, then begins serving requests. A failed connection or migration prevents startup. The API closes the HTTP server and pool on `SIGTERM`/`SIGINT`.
+| Variable | Description | Default |
+|---|---|---|
+| `DATABASE_URL` | PostgreSQL connection URL | Required |
+| `FRONTEND_ORIGIN` | Frontend origin for CORS configuration | `http://localhost:5173` |
 
-The migration currently creates schema and deterministic development seed findings. Review whether those seed records are appropriate before using a new production database.
+The frontend supports:
 
-## Architecture and API
+| Variable | Description | Default |
+|---|---|---|
+| `VITE_API_URL` | Backend API base URL | `http://localhost:8080/api` |
 
-See [architecture](docs/ARCHITECTURE.md) and [API reference](docs/API.md). Stack: React/TypeScript/Vite, Go, PostgreSQL, and Docker Compose.
+## Production Deployment (Render)
 
-## Status and limitations
+VANTA supports deployment using Render PostgreSQL and a backend container image.
 
-This is a presentation-ready first phase. It has no authentication, ZAP importer, reporting exports, automatic finding correlation, risk scoring, or complete user/audit workflow. Nmap observations are intentionally separate from confirmed findings. See [ROADMAP.md](ROADMAP.md).
+### Backend Deployment
+
+Deploy the backend using the Dockerfile located at:
+
+```text
+backend/Dockerfile
+```
+
+The Docker image includes the SQL migrations directory:
+
+```text
+/app/migrations
+```
+
+The API automatically applies ordered SQL migrations before accepting HTTP requests.
+
+### Required Environment Variables
+
+Configure the following variables in the Render service dashboard:
+
+| Variable | Description |
+|---|---|
+| `DATABASE_URL` | PostgreSQL connection URL provided by Render |
+| `FRONTEND_ORIGIN` | Exact public origin of the deployed frontend |
+| `PORT` | Port assigned by the application host |
+
+**Important:** Never commit production credentials or database connection strings to source control.
+
+### Database Initialization
+
+The Go application requires `DATABASE_URL`. There is no fallback to a local database connection string.
+
+During startup, the API:
+
+1. Establishes a PostgreSQL connection pool.
+2. Connects to and verifies the database.
+3. Applies the ordered, idempotent SQL migrations.
+4. Starts accepting HTTP requests.
+
+If the database connection or migration process fails, the API does not start serving requests.
+
+The application also handles `SIGTERM` and `SIGINT` signals to shut down the HTTP server and database connection pool gracefully.
+
+**Production consideration:** The current migrations include deterministic development seed findings. Review and adjust these records before deploying to a new production database.
+
+## Architecture and API Documentation
+
+For additional technical details, refer to:
+
+- [System Architecture](docs/ARCHITECTURE.md)
+- [API Reference](docs/API.md)
+- [Project Roadmap](ROADMAP.md)
+
+## Project Status and Limitations
+
+VANTA currently represents a presentation-ready first development phase.
+
+The following capabilities are not yet implemented:
+
+- User authentication and authorization.
+- OWASP ZAP report importer.
+- Vulnerability reporting and export functionality.
+- Automatic finding correlation and deduplication.
+- Risk scoring and prioritization.
+- Complete user and audit management workflows.
+
+Nmap observations and confirmed vulnerability findings are intentionally maintained as separate records.
+
+For planned improvements and future development, see [ROADMAP.md](ROADMAP.md).
 
 ## Troubleshooting
 
-- If port 5173/8080 is occupied, change `FRONTEND_PORT`/`API_PORT` in `.env`.
-- A malformed XML report returns a safe 400 response. The server accepts `.xml` uploads up to 5 MB.
-- Rebuild after code changes with `docker compose up --build`.
+| Issue | Solution |
+|---|---|
+| Port `5173` is already occupied | Change `FRONTEND_PORT` in `.env`. |
+| Port `8080` is already occupied | Change `API_PORT` in `.env`. |
+| Invalid Nmap XML report | Ensure the uploaded file contains valid XML in a supported Nmap format. |
+| Upload rejected | The server accepts `.xml` files up to 5 MB. |
+| Changes are not reflected | Rebuild the application using `docker compose up --build`. |
+| Database connection failure | Verify PostgreSQL availability and the configured `DATABASE_URL`. |
+
+---
+
+**VANTA | Vulnerability Analysis, Normalization, Tracking and Assessment**
+
+*Academic Project | B.Sc. (Hons.) Cybersecurity & Computer Science*
