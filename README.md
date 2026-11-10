@@ -1,7 +1,7 @@
 # VANTA
-Name: Akansh Pandey B.Sc(Hons)CyberSecurity
-      Aditya Chouhan B.Sc(Hons)CyberSecurity
-      Kartikey drall B.Sc(Hons)ComputerScience
+# Name: Akansh Pandey B.Sc(Hons)CyberSecurity
+#       Aditya Chouhan B.Sc(Hons)CyberSecurity
+ #      Kartikey drall B.Sc(Hons)ComputerScience
 VANTA (Vulnerability Analysis, Normalization, Tracking and Assessment) is an early academic vulnerability-management platform. It imports authorized Nmap XML reports as scanner observations and provides a persisted workflow for reviewing tracked findings. It does **not** scan targets, fabricate CVEs, exploit systems, or automatically remediate issues.
 
 ## Working capabilities
